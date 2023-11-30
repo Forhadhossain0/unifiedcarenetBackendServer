@@ -32,6 +32,10 @@ async function run() {
     const UserReviews_Collection = MYDB.collection('reviews')
     const Payment_Collection = MYDB.collection('payment')
 
+    const ProfessionalsBio_Collection = MYDB.collection('ProfessionalsBio')
+    const ProfessionalsInterest_Collection = MYDB.collection('ProfessionalsInterest')
+
+
 
 
         // jwt oparation
@@ -61,10 +65,7 @@ async function run() {
          }
 
 
-         
-         
-         
-         
+
 
          const verifyOrganizer = async(req,res,next)=>{
         const email = req.decoded.email;
@@ -151,7 +152,7 @@ async function run() {
             const user = await Users_Collection.findOne(query);
             let professionals = false;
             if(user){
-              console.log(user)
+              // console.log(user)
             professionals = user?.role === 'professionals'
           }
           else{
@@ -193,7 +194,7 @@ async function run() {
        const id = req.params.id;
       //  const cursor = {_id: (id)}
         const cursor = {_id: new ObjectId(id)}
-       console.log(cursor)
+      //  console.log(cursor)
        const result = await Camp_Collection.findOne(cursor)
        res.send(result)
     })
@@ -215,7 +216,7 @@ async function run() {
     app.patch('/camp/:id', async (req, res) => {
       const cursor = req.body;
       const id = req.params.id;
-      console.log(cursor)
+      // console.log(cursor)
       const query = {_id: (id)};
       // const query = { _id: new ObjectId(id) }
       const updatedDoc = {
@@ -239,6 +240,20 @@ async function run() {
     })
 
   
+    app.patch('/camp/campNavigate/:id', async (req, res) => {
+      const cursor = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          camprole: (cursor?.camprole),
+        },
+      };
+      const result = await Camp_Collection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+
     app.patch('/camp/perticipentCount/:id', async (req, res) => {
       const cursor = req.body;
       const id = req.params.id;
@@ -252,9 +267,10 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/camp/professionals/:id', async (req, res) => {
+    app.patch('/camp/professionalsCount/:id', async (req, res) => {
       const cursor = req.body;
       const id = req.params.id;
+      console.log(id, 'and body is : ' , cursor)
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
@@ -291,7 +307,7 @@ async function run() {
    
    app.delete('/registerdCamp/:id',  async(req,res)=>{
     const id = req.params.id;
-    console.log(id)
+    // console.log(id)
     const query = {_id: new ObjectId(id)};
     const result = await RegisterdCamp_Collection.deleteOne(query)
     res.send(result)
@@ -333,7 +349,7 @@ async function run() {
     // payment history saved and delete Camp 
     app.post('/payment',async(req,res)=>{
       const payment = req.body;
-      console.log(payment);
+      // console.log(payment);
       const paymentResult = await Payment_Collection.insertOne(payment);
 
       // delete my added registerdCamp by ids from RegisterdCamp collection
@@ -372,6 +388,85 @@ async function run() {
       res.send(result);
   });
   
+
+
+  // professtional profile part
+  app.get('/ProfessionalsBio', async(req,res)=>{
+    const result = await ProfessionalsBio_Collection.find().toArray();
+    res.send(result)
+ })
+
+//  app.post('/registerdCamp', verifyToken, async(req,res)=>{
+ app.post('/ProfessionalsBio', async(req,res)=>{
+    const cursor = req.body;
+    const result = await ProfessionalsBio_Collection.insertOne(cursor)
+    res.send(result)
+ })
+
+ app.patch('/ProfessionalsBio/:id', async (req, res) => {
+  const cursor = req.body;
+  const id = req.params.id;
+  // console.log(cursor, 'and id is : ');
+  const query = { _id: new ObjectId(id) };
+
+    const updatedDoc = {
+      $set: {
+        name: cursor.name,
+        email: cursor.email,
+        number: cursor.number,
+        degree: cursor.degree,
+        certification: cursor.certification,
+        location: cursor.location,
+      },
+    };
+
+    const result = await ProfessionalsBio_Collection.updateOne(query, updatedDoc);
+    res.send(result)
+});
+
+
+
+// professionalsInterest button 
+  app.get('/professionalsInterest', async(req,res)=>{
+    const result = await ProfessionalsInterest_Collection.find().toArray();
+    res.send(result)
+ })
+
+//  app.post('/registerdCamp', verifyToken, async(req,res)=>{
+ app.post('/professionalsInterest', async(req,res)=>{
+    const cursor = req.body;
+    const result = await ProfessionalsInterest_Collection.insertOne(cursor)
+    res.send(result)
+ })
+
+ app.patch('/professionalsInterest/:id', async (req, res) => {
+  const cursor = req.body;
+  const id = req.params.id;
+  console.log(cursor,id)
+  const query = { _id: new ObjectId(id) };
+    const updatedDoc = {
+      $set: {
+        // 'campData.interest': cursor?.campData?.interest,
+        'campData.interest': 'accepted'
+      },
+    };
+    const result = await ProfessionalsInterest_Collection.updateOne(query, updatedDoc);
+    res.send(result)
+});
+
+
+
+app.delete('/professionalsInterest/:id', verifyToken,  async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await ProfessionalsInterest_Collection.deleteOne(query)
+  res.send(result)
+})
+
+  
+
+ 
+
 
     
     // Send a ping to confirm a successful connection
